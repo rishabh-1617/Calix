@@ -1,0 +1,3148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calix — AI Calisthenics Form Coach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #111317;
+      --bg-elevated: #171A20;
+      --surface: #1A1D24;
+      --surface-hover: #21252E;
+      --surface-subtle: #14171D;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --ink: #F3F4F6;
+      --ink-muted: #9CA3AF;
+      --ink-faint: #6B7280;
+      --accent: #A3D95B;
+      --accent-hover: #B4E572;
+      --accent-ink: #10150B;
+      --accent-soft: rgba(163, 217, 91, 0.12);
+      --accent-border: rgba(163, 217, 91, 0.32);
+      --good: #4ADE80;
+      --good-bg: rgba(74, 222, 128, 0.12);
+      --warn: #FBBF24;
+      --warn-bg: rgba(251, 191, 36, 0.12);
+      --bad: #F87171;
+      --bad-bg: rgba(248, 113, 113, 0.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow-card: 0 8px 24px -6px rgba(0, 0, 0, 0.45);
+      --font-head: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      background-image: radial-gradient(circle at 50% -10%, rgba(163, 217, 91, 0.06), transparent 55%);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .page-shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 20px 24px 64px;
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        padding: 16px 16px 48px;
+      }
+    }
+
+    /* Header */
+    header.site-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0 22px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(145deg, rgba(163, 217, 91, 0.22), rgba(163, 217, 91, 0.06));
+      border: 1px solid var(--accent-border);
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+      margin: 0;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+
+    .brand-sub {
+      margin: 2px 0 0;
+      color: var(--ink-muted);
+      font-size: 0.86rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--ink-muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.85;
+    }
+
+    /* Main Workspace Grid */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg-elevated) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .panel-title {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 0.98rem;
+      margin: 0 0 12px;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+
+    /* Video Stage */
+    .stage-panel {
+      padding: 16px;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg-elevated) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+    }
+
+    .video-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #0C0E12;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-stage video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .video-stage canvas#overlayCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .hud-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .hud-pill {
+      background: rgba(17, 19, 23, 0.85);
+      color: var(--ink-muted);
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      backdrop-filter: blur(6px);
+    }
+
+    .hud-pill strong {
+      color: var(--accent);
+      font-weight: 600;
+      margin-left: 5px;
+    }
+
+    /* Upload Dropzone */
+    .dropzone-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      background: radial-gradient(circle at 50% 35%, rgba(163, 217, 91, 0.05), transparent 65%), #12151B;
+      color: var(--ink);
+      border: 1.5px dashed var(--border-strong);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+      z-index: 3;
+    }
+
+    .dropzone-overlay:hover {
+      border-color: var(--accent-border);
+      background-color: #151921;
+    }
+
+    .dropzone-overlay.is-hidden {
+      display: none;
+    }
+
+    .dropzone-overlay.is-dragover {
+      border-color: var(--accent);
+      background-color: rgba(163, 217, 91, 0.08);
+    }
+
+    .upload-icon-wrap {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      margin-bottom: 12px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .dropzone-overlay:hover .upload-icon-wrap,
+    .dropzone-overlay.is-dragover .upload-icon-wrap {
+      transform: translateY(-2px);
+      border-color: var(--accent-border);
+    }
+
+    .dropzone-heading {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 1.08rem;
+      margin: 0 0 4px;
+      color: var(--ink);
+    }
+
+    .dropzone-sub {
+      margin: 0 0 16px;
+      color: var(--ink-muted);
+      font-size: 0.88rem;
+      max-width: 38ch;
+    }
+
+    .dropzone-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.12s ease;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.985);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      width: 100%;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      box-shadow: 0 2px 10px rgba(163, 217, 91, 0.16);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--surface-hover);
+      color: var(--ink);
+      border-color: var(--border-strong);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #282D38;
+      border-color: rgba(255, 255, 255, 0.24);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink-muted);
+      border-color: var(--border-strong);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .stage-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: var(--ink-muted);
+    }
+
+    .stage-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .progress-wrap {
+      margin-top: 14px;
+      display: none;
+    }
+
+    .progress-wrap.is-visible {
+      display: block;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--ink-muted);
+      margin-bottom: 6px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: var(--surface-subtle);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.12s linear;
+    }
+
+    /* Category Filter Pills */
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .filter-pill {
+      padding: 5px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      color: var(--ink-muted);
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .filter-pill:hover {
+      color: var(--ink);
+      border-color: var(--border-strong);
+    }
+
+    .filter-pill[aria-pressed="true"] {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent-border);
+    }
+
+    /* Exercise Cards */
+    .exercise-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .exercise-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .exercise-btn {
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      color: var(--ink);
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: border-color 0.16s ease, background-color 0.16s ease;
+    }
+
+    .exercise-btn:hover {
+      border-color: var(--border-strong);
+      background: var(--surface-hover);
+    }
+
+    .exercise-btn[aria-pressed="true"] {
+      border-color: var(--accent-border);
+      background: var(--accent-soft);
+    }
+
+    .exercise-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .exercise-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+
+    .exercise-cat-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--ink-muted);
+    }
+
+    .exercise-btn[aria-pressed="true"] .exercise-cat-tag {
+      background: rgba(163, 217, 91, 0.18);
+      color: var(--accent);
+    }
+
+    .exercise-type {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--ink-muted);
+    }
+
+    /* Form Guide Blueprint */
+    .blueprint-card {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .blueprint-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .blueprint-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+    }
+
+    .blueprint-toggle {
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--ink);
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+
+    .blueprint-toggle:hover {
+      border-color: var(--accent-border);
+    }
+
+    .blueprint-body {
+      display: grid;
+      grid-template-columns: 108px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .blueprint-svg {
+      width: 108px;
+      height: 84px;
+      background: #0D0F13;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: block;
+    }
+
+    .blueprint-tip {
+      font-size: 0.84rem;
+      color: var(--ink);
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    .blueprint-targets {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Difficulty Drawer */
+    details.tuner-drawer {
+      margin-top: 12px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+    }
+
+    details.tuner-drawer summary {
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    details.tuner-drawer summary:hover {
+      color: var(--ink);
+    }
+
+    details.tuner-drawer summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .tuner-controls {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.84rem;
+    }
+
+    .tuner-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tuner-row-head {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 500;
+      color: var(--ink-muted);
+    }
+
+    .tuner-row-head span {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .tuner-row input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .action-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .status-banner {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.86rem;
+      display: none;
+    }
+
+    .status-banner.is-visible {
+      display: block;
+    }
+
+    .status-banner.is-error {
+      background: var(--bad-bg);
+      color: var(--bad);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+    }
+
+    .status-banner.is-info {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--accent-border);
+    }
+
+    .privacy-note {
+      margin: 12px 0 0;
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+    }
+
+    /* Results Section */
+    .results-section {
+      margin-top: 24px;
+      display: none;
+      animation: fadeSlideUp 0.25s ease-out;
+    }
+
+    .results-section.is-visible {
+      display: block;
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 920px) {
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .score-card,
+    .chart-panel {
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg-elevated) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .score-value {
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: 3.1rem;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin: 6px 0 10px;
+      color: var(--ink);
+    }
+
+    .score-label {
+      display: inline-block;
+      font-weight: 600;
+      font-size: 0.84rem;
+      padding: 4px 11px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+
+    .score-label.good {
+      background: var(--good-bg);
+      color: var(--good);
+    }
+
+    .score-label.warn {
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+
+    .score-label.bad {
+      background: var(--bad-bg);
+      color: var(--bad);
+    }
+
+    .summary-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .stat-item span {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+    }
+
+    .stat-item strong {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .feedback-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .feedback-item {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      border-left: 3px solid transparent;
+    }
+
+    .feedback-item.is-good {
+      background: var(--good-bg);
+      color: var(--good);
+      border-left-color: var(--good);
+    }
+
+    .feedback-item.is-issue {
+      background: var(--bad-bg);
+      color: var(--bad);
+      border-left-color: var(--bad);
+    }
+
+    .chart-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .chart-hint {
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+    }
+
+    .chart-wrap {
+      width: 100%;
+      height: 230px;
+      position: relative;
+      margin-bottom: 18px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px;
+    }
+
+    canvas#angleChart {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--ink-muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tbody tr.is-clickable {
+      cursor: pointer;
+      transition: background-color 0.14s ease;
+    }
+
+    tbody tr.is-clickable:hover {
+      background: var(--accent-soft);
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .pill-full {
+      background: var(--good-bg);
+      color: var(--good);
+    }
+
+    .pill-partial {
+      background: var(--bad-bg);
+      color: var(--bad);
+    }
+
+    /* Session Report Card */
+    .report-card {
+      margin-top: 20px;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg-elevated) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .report-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .report-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 760px) {
+      .report-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .report-metric {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+
+    .report-metric span {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--ink-muted);
+    }
+
+    .report-metric strong {
+      font-size: 0.96rem;
+      color: var(--ink);
+    }
+
+    .report-text {
+      margin: 0;
+      padding: 12px 14px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--ink-muted);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    /* History Section */
+    .history-section {
+      margin-top: 24px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .history-empty {
+      color: var(--ink-muted);
+      font-size: 0.88rem;
+      margin: 0;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Calix</h1>
+          <p class="brand-sub">Every rep, measured — AI calisthenics form coach</p>
+        </div>
+      </div>
+      <div class="status-pill" aria-live="polite">
+        <span class="status-dot"></span>
+        <span id="modelStatus">Ready for video upload</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="workspace-grid">
+        <!-- Left column: Video stage -->
+        <section class="stage-panel" aria-label="Video stage">
+          <div class="video-stage" id="videoStage">
+            <video id="videoPlayer" playsinline muted preload="metadata"></video>
+            <canvas id="overlayCanvas"></canvas>
+
+            <div class="hud-overlay" id="hudOverlay" hidden>
+              <span class="hud-pill">Position:<strong id="hudAngle">--</strong></span>
+              <span class="hud-pill" id="hudCounterWrap">Reps:<strong id="hudCounter">0</strong></span>
+              <span class="hud-pill">Posture:<strong id="hudForm">--</strong></span>
+            </div>
+
+            <div class="dropzone-overlay" id="dropzone" role="button" tabindex="0" aria-label="Upload a workout video">
+              <div class="upload-icon-wrap" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <p class="dropzone-heading">Upload your workout clip</p>
+              <p class="dropzone-sub">Drag and drop MP4, WebM, or MOV (up to 60s). Analyzed privately on your device.</p>
+              <div class="dropzone-actions">
+                <span class="btn btn-secondary">Choose video</span>
+                <button type="button" class="btn btn-ghost" id="demoFromStageBtn">Try demo clip</button>
+              </div>
+            </div>
+          </div>
+
+          <input type="file" id="fileInput" accept="video/*" class="sr-only" />
+
+          <div class="stage-meta-bar">
+            <span id="fileMeta">No video selected</span>
+            <div class="stage-controls">
+              <button type="button" class="btn btn-secondary" id="playPauseBtn" hidden>Play</button>
+              <button type="button" class="btn btn-secondary" id="speedBtn" hidden>1.0x</button>
+              <button type="button" class="btn btn-secondary" id="scanSpeedBtn" title="Switch scan speed">Scan: 2.0x Fast</button>
+              <button type="button" class="btn btn-secondary" id="changeVideoBtn" hidden>Replace video</button>
+            </div>
+          </div>
+
+          <div class="progress-wrap" id="progressWrap" aria-live="polite">
+            <div class="progress-header">
+              <span id="progressLabel">Checking your movement...</span>
+              <span id="progressPct">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right column: Exercise picker & analyze action -->
+        <aside class="panel" aria-label="Exercise settings">
+          <h2 class="panel-title">1. Pick your exercise</h2>
+
+          <div class="filter-row" id="categoryFilters" role="group" aria-label="Filter exercises by category">
+            <button type="button" class="filter-pill" data-cat="all" aria-pressed="true">All</button>
+            <button type="button" class="filter-pill" data-cat="push" aria-pressed="false">Push</button>
+            <button type="button" class="filter-pill" data-cat="pull" aria-pressed="false">Pull</button>
+            <button type="button" class="filter-pill" data-cat="dynamics" aria-pressed="false">Bar &amp; Dynamics</button>
+            <button type="button" class="filter-pill" data-cat="legs-core" aria-pressed="false">Legs &amp; Core</button>
+          </div>
+
+          <div class="exercise-list" id="exerciseList" role="group" aria-label="Exercise selection"></div>
+
+          <div class="blueprint-card" id="cameraTip">
+            <div class="blueprint-header">
+              <span class="blueprint-title">How it should look</span>
+              <button type="button" class="blueprint-toggle" id="blueprintToggleBtn">See target position</button>
+            </div>
+            <div class="blueprint-body">
+              <svg class="blueprint-svg" id="blueprintSvg" viewBox="0 0 112 88" aria-hidden="true"></svg>
+              <div>
+                <p class="blueprint-tip" id="cameraTipText"></p>
+                <div class="blueprint-targets" id="blueprintTargets"></div>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="panel-title">2. Analyze your form</h2>
+          <div class="action-stack">
+            <button type="button" class="btn btn-primary" id="analyzeBtn" disabled>Analyze form</button>
+            <button type="button" class="btn btn-secondary" id="runDemoBtn">Preview with sample set</button>
+          </div>
+
+          <details class="tuner-drawer">
+            <summary>
+              <span>Difficulty level (optional)</span>
+              <span>Adjust</span>
+            </summary>
+            <div class="tuner-controls">
+              <div class="tuner-row">
+                <div class="tuner-row-head">
+                  <label for="depthSlider" id="depthSliderLabel">Depth strictness</label>
+                  <span id="depthSliderVal">Standard</span>
+                </div>
+                <input type="range" id="depthSlider" min="60" max="175" step="1" value="90" />
+              </div>
+              <div class="tuner-row" id="lockoutSliderRow">
+                <div class="tuner-row-head">
+                  <label for="lockoutSlider">Top extension strictness</label>
+                  <span id="lockoutSliderVal">Standard</span>
+                </div>
+                <input type="range" id="lockoutSlider" min="110" max="178" step="1" value="155" />
+              </div>
+              <button type="button" class="btn btn-secondary" id="resetThresholdsBtn" style="padding:6px 10px; font-size:0.82rem;">Reset to standard</button>
+            </div>
+          </details>
+
+          <div class="status-banner" id="statusBanner" role="alert"></div>
+
+          <p class="privacy-note">
+            Your video never leaves your device. All pose tracking happens directly in your browser.
+          </p>
+        </aside>
+      </div>
+
+      <!-- Results Screen -->
+      <section class="results-section" id="resultsSection" aria-label="Analysis results">
+        <div class="results-grid">
+          <div class="score-card">
+            <div class="brand-sub" id="resultExerciseTitle">Push-up</div>
+            <div class="score-value" id="resultScore">0</div>
+            <div class="score-label" id="resultLabel">Needs work</div>
+
+            <div class="summary-stats">
+              <div class="stat-item">
+                <span id="primaryCountLabel">Reps completed</span>
+                <strong id="primaryCountValue">0</strong>
+              </div>
+              <div class="stat-item">
+                <span>Body frames tracked</span>
+                <strong id="usableFramesValue">0</strong>
+              </div>
+            </div>
+
+            <h3 class="panel-title">How to improve</h3>
+            <ul class="feedback-list" id="feedbackList"></ul>
+          </div>
+
+          <div class="chart-panel">
+            <div class="chart-header">
+              <h3 class="panel-title" id="chartTitle" style="margin:0;">Movement rhythm over time</h3>
+              <span class="chart-hint" id="chartHint">Click any dip or rep row to jump to that moment</span>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="angleChart"></canvas>
+            </div>
+
+            <div id="repTableWrap" class="table-wrap">
+              <h3 class="panel-title">Rep-by-rep check</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rep</th>
+                    <th>Result</th>
+                    <th>Depth reached</th>
+                    <th>Pacing</th>
+                  </tr>
+                </thead>
+                <tbody id="repTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session Report Section -->
+        <div class="report-card" id="reportCard">
+          <div class="report-header">
+            <h3 class="panel-title" style="margin:0;">Session summary report</h3>
+            <div class="report-actions">
+              <button type="button" class="btn btn-secondary" id="copyReportBtn">Copy summary</button>
+              <button type="button" class="btn btn-secondary" id="downloadReportBtn">Download .txt</button>
+            </div>
+          </div>
+          <div class="report-grid" id="reportSummaryGrid"></div>
+          <pre class="report-text" id="reportText"></pre>
+        </div>
+      </section>
+
+      <!-- History -->
+      <section class="panel history-section" aria-label="Recent sets">
+        <div class="history-header">
+          <h2 class="panel-title" style="margin:0;">Recent sets</h2>
+          <button type="button" class="btn btn-secondary" id="clearHistoryBtn" style="padding:6px 12px; font-size:0.82rem;">Clear history</button>
+        </div>
+        <div id="historyContainer"></div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    let mpVision = null;
+
+    // === PURE_ENGINE_START ===
+    export const EXERCISE_CONFIG = {
+      "push-up": {
+        id: "push-up",
+        name: "Push-up",
+        category: "push",
+        categoryLabel: "Push",
+        mode: "reps",
+        primaryMetric: "elbowAngle",
+        metricLabel: "Push-up depth & top lockout",
+        depthCue: "Chest lowers close to the floor",
+        lockoutCue: "Arms press straight at the top",
+        depthTarget: 90,
+        lockoutTarget: 155,
+        hysteresis: 8,
+        minRepDurationSec: 0.4,
+        minExcursionDeg: 20,
+        maxHipSag: 0.06,
+        maxHipPike: -0.07,
+        minBodyLineAngle: 155,
+        minLoweringSec: 0.65,
+        cameraTip: "Film from the side at floor height with your full body from head to ankles in frame."
+      },
+      "dip": {
+        id: "dip",
+        name: "Dip",
+        category: "push",
+        categoryLabel: "Push",
+        mode: "reps",
+        primaryMetric: "elbowAngle",
+        metricLabel: "Dip depth & top lockout",
+        depthCue: "Shoulders drop down to elbow level",
+        lockoutCue: "Arms press straight at the top",
+        depthTarget: 90,
+        lockoutTarget: 155,
+        hysteresis: 8,
+        minRepDurationSec: 0.45,
+        minExcursionDeg: 20,
+        maxTorsoLean: 35,
+        minLoweringSec: 0.65,
+        cameraTip: "Film from the side at bar height with your shoulders, elbows, wrists, and hips visible."
+      },
+      "pike-push-up": {
+        id: "pike-push-up",
+        name: "Pike push-up",
+        category: "push",
+        categoryLabel: "Push",
+        mode: "reps",
+        primaryMetric: "elbowAngle",
+        metricLabel: "Head-to-floor depth & press",
+        depthCue: "Head lowers toward the floor between hands",
+        lockoutCue: "Arms press straight in an inverted V",
+        depthTarget: 95,
+        lockoutTarget: 155,
+        hysteresis: 8,
+        minRepDurationSec: 0.45,
+        minExcursionDeg: 20,
+        minPikeAngle: 65,
+        maxPikeAngle: 135,
+        minLoweringSec: 0.65,
+        cameraTip: "Film from the side at floor level with your hands, shoulders, hips, and ankles in frame."
+      },
+      "pull-up": {
+        id: "pull-up",
+        name: "Pull-up",
+        category: "pull",
+        categoryLabel: "Pull",
+        mode: "reps",
+        primaryMetric: "elbowAngle",
+        metricLabel: "Pull height & full hang",
+        depthCue: "Chin clears above the bar at the top",
+        lockoutCue: "Arms relax straight in a full hang",
+        depthTarget: 80,
+        lockoutTarget: 150,
+        hysteresis: 8,
+        minRepDurationSec: 0.45,
+        minExcursionDeg: 25,
+        requireChinAboveWrists: true,
+        maxHipSwing: 0.09,
+        minLoweringSec: 0.65,
+        cameraTip: "Film from a slight front-side angle with the bar, your hands, chin, and full body visible."
+      },
+      "muscle-up": {
+        id: "muscle-up",
+        name: "Muscle-up",
+        category: "dynamics",
+        categoryLabel: "Dynamics",
+        mode: "reps",
+        primaryMetric: "elbowAngle",
+        metricLabel: "Explosive pull & dip lockout",
+        depthCue: "Pull chest over the bar and press to straight arms",
+        lockoutCue: "Full hang below the bar between reps",
+        depthTarget: 85,
+        lockoutTarget: 150,
+        hysteresis: 8,
+        minRepDurationSec: 0.55,
+        minExcursionDeg: 25,
+        requireChinAboveWrists: true,
+        maxHipSwing: 0.14,
+        minLoweringSec: 0.5,
+        cameraTip: "Film from a wide side angle showing both below and above the bar so the transition is visible."
+      },
+      "roll-over": {
+        id: "roll-over",
+        name: "Roll-over / Skin the cat",
+        category: "dynamics",
+        categoryLabel: "Dynamics",
+        mode: "reps",
+        primaryMetric: "bodyLineAngle",
+        metricLabel: "Tuck rotation & control",
+        depthCue: "Tuck knees through your arms smoothly",
+        lockoutCue: "Return to a straight dead hang",
+        depthTarget: 75,
+        lockoutTarget: 150,
+        hysteresis: 8,
+        minRepDurationSec: 0.8,
+        minExcursionDeg: 35,
+        minLoweringSec: 0.75,
+        cameraTip: "Film from the side with the bar or rings centered and plenty of room above and below."
+      },
+      "squat": {
+        id: "squat",
+        name: "Squat",
+        category: "legs-core",
+        categoryLabel: "Legs",
+        mode: "reps",
+        primaryMetric: "kneeAngle",
+        metricLabel: "Squat depth & stand-up",
+        depthCue: "Hips drop down to knee height",
+        lockoutCue: "Stand tall with legs straight",
+        depthTarget: 100,
+        lockoutTarget: 160,
+        hysteresis: 8,
+        minRepDurationSec: 0.45,
+        minExcursionDeg: 20,
+        maxTorsoLean: 45,
+        minLoweringSec: 0.7,
+        cameraTip: "Film from the side at hip height so your shoulders, hips, knees, and ankles stay visible."
+      },
+      "lunge": {
+        id: "lunge",
+        name: "Lunge",
+        category: "legs-core",
+        categoryLabel: "Legs",
+        mode: "reps",
+        primaryMetric: "kneeAngle",
+        metricLabel: "Lunge depth & stand-up",
+        depthCue: "Front thigh parallel to the floor",
+        lockoutCue: "Stand back up tall",
+        depthTarget: 95,
+        lockoutTarget: 160,
+        hysteresis: 8,
+        minRepDurationSec: 0.45,
+        minExcursionDeg: 20,
+        maxTorsoLean: 30,
+        minLoweringSec: 0.65,
+        cameraTip: "Film from the side at hip height so your front knee, hip, and torso stay in frame."
+      },
+      "plank": {
+        id: "plank",
+        name: "Plank",
+        category: "legs-core",
+        categoryLabel: "Core",
+        mode: "hold",
+        primaryMetric: "bodyLineAngle",
+        metricLabel: "Straight-body alignment",
+        depthCue: "Straight line from shoulders to ankles",
+        lockoutCue: "Steady core hold",
+        depthTarget: 162,
+        lockoutTarget: 180,
+        targetDurationSec: 30,
+        maxHipSag: 0.06,
+        maxHipPike: -0.06,
+        cameraTip: "Film from the side at floor level with your shoulders, hips, and ankles clearly visible."
+      },
+      "l-sit": {
+        id: "l-sit",
+        name: "L-sit",
+        category: "legs-core",
+        categoryLabel: "Core",
+        mode: "hold",
+        primaryMetric: "bodyLineAngle",
+        metricLabel: "Leg lift & straight knees",
+        depthCue: "Legs lifted straight out in an L shape",
+        lockoutCue: "Knees locked straight",
+        depthTarget: 75,
+        lockoutTarget: 115,
+        minKneeAngle: 155,
+        targetDurationSec: 20,
+        cameraTip: "Film from the side at floor or parallettes height with your torso and extended legs visible."
+      }
+    };
+
+    export const MIN_USABLE_FRAMES = 20;
+    export const SMOOTHING_WINDOW = 5;
+
+    export function clamp(val, min, max) {
+      return Math.max(min, Math.min(max, val));
+    }
+
+    export function computeAngleDeg(a, b, c) {
+      const abx = a.x - b.x;
+      const aby = a.y - b.y;
+      const cbx = c.x - b.x;
+      const cby = c.y - b.y;
+      const magAB = Math.hypot(abx, aby);
+      const magCB = Math.hypot(cbx, cby);
+      if (magAB < 1e-6 || magCB < 1e-6) return null;
+      const cosTheta = clamp((abx * cbx + aby * cby) / (magAB * magCB), -1, 1);
+      return (Math.acos(cosTheta) * 180) / Math.PI;
+    }
+
+    export function computeTorsoLeanDeg(shoulder, hip) {
+      const vx = shoulder.x - hip.x;
+      const vy = shoulder.y - hip.y;
+      const mag = Math.hypot(vx, vy);
+      if (mag < 1e-6) return null;
+      const cosTheta = clamp((-vy) / mag, -1, 1);
+      return (Math.acos(cosTheta) * 180) / Math.PI;
+    }
+
+    export function computeSignedHipOffset(shoulder, hip, ankle) {
+      const dx = ankle.x - shoulder.x;
+      const dy = ankle.y - shoulder.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 1e-6) return null;
+      let nx = -dy / len;
+      let ny = dx / len;
+      if (ny < 0) {
+        nx = -nx;
+        ny = -ny;
+      }
+      return ((hip.x - shoulder.x) * nx + (hip.y - shoulder.y) * ny) / len;
+    }
+
+    export function pickBestSide(landmarks) {
+      const leftIdx = [11, 13, 15, 23, 25, 27];
+      const rightIdx = [12, 14, 16, 24, 26, 28];
+      const avgVis = (indices) =>
+        indices.reduce((sum, idx) => sum + (landmarks[idx]?.visibility ?? 0), 0) / indices.length;
+
+      const leftVis = avgVis(leftIdx);
+      const rightVis = avgVis(rightIdx);
+      const useLeft = leftVis >= rightVis;
+      return {
+        side: useLeft ? "left" : "right",
+        visibility: useLeft ? leftVis : rightVis,
+        shoulder: landmarks[useLeft ? 11 : 12],
+        elbow: landmarks[useLeft ? 13 : 14],
+        wrist: landmarks[useLeft ? 15 : 16],
+        hip: landmarks[useLeft ? 23 : 24],
+        knee: landmarks[useLeft ? 25 : 26],
+        ankle: landmarks[useLeft ? 27 : 28]
+      };
+    }
+
+    export function extractFrameMetrics(landmarks, width, height, timeSec) {
+      if (!landmarks || landmarks.length < 29) return null;
+      const picked = pickBestSide(landmarks);
+      const required = [picked.shoulder, picked.elbow, picked.wrist, picked.hip, picked.knee, picked.ankle];
+      if (required.some((pt) => !pt || (pt.visibility ?? 0) < 0.35)) {
+        return null;
+      }
+
+      const scale = (pt) => ({ x: pt.x * width, y: pt.y * height });
+      const S = scale(picked.shoulder);
+      const E = scale(picked.elbow);
+      const W = scale(picked.wrist);
+      const H = scale(picked.hip);
+      const K = scale(picked.knee);
+      const A = scale(picked.ankle);
+
+      const elbowAngle = computeAngleDeg(S, E, W);
+      const kneeAngle = computeAngleDeg(H, K, A);
+      const bodyLineAngle = computeAngleDeg(S, H, A);
+      const torsoLean = computeTorsoLeanDeg(S, H);
+      const hipOffset = computeSignedHipOffset(S, H, A);
+
+      const mouthL = landmarks[9];
+      const mouthR = landmarks[10];
+      const nose = landmarks[0];
+      const chinY =
+        mouthL && mouthR && (mouthL.visibility ?? 0) > 0.3 && (mouthR.visibility ?? 0) > 0.3
+          ? ((mouthL.y + mouthR.y) / 2) * height
+          : nose
+          ? nose.y * height
+          : S.y;
+
+      const wristL = landmarks[15];
+      const wristR = landmarks[16];
+      const wristY =
+        wristL && wristR && (wristL.visibility ?? 0) > 0.3 && (wristR.visibility ?? 0) > 0.3
+          ? ((wristL.y + wristR.y) / 2) * height
+          : W.y;
+
+      const chinAboveWrists = chinY < wristY;
+
+      if (
+        elbowAngle === null ||
+        kneeAngle === null ||
+        bodyLineAngle === null ||
+        torsoLean === null ||
+        hipOffset === null
+      ) {
+        return null;
+      }
+
+      return {
+        time: timeSec,
+        side: picked.side,
+        elbowAngle,
+        kneeAngle,
+        bodyLineAngle,
+        torsoLean,
+        hipOffset,
+        chinAboveWrists
+      };
+    }
+
+    export function movingAverage(values, windowSize = SMOOTHING_WINDOW) {
+      if (!values.length) return [];
+      const half = Math.floor(windowSize / 2);
+      return values.map((_, i) => {
+        const start = Math.max(0, i - half);
+        const end = Math.min(values.length - 1, i + half);
+        let sum = 0;
+        let count = 0;
+        for (let j = start; j <= end; j++) {
+          sum += values[j];
+          count++;
+        }
+        return sum / count;
+      });
+    }
+
+    export function smoothFrames(frames, windowSize = SMOOTHING_WINDOW) {
+      if (!frames.length) return [];
+      const keys = ["elbowAngle", "kneeAngle", "bodyLineAngle", "torsoLean", "hipOffset"];
+      const smoothed = {};
+      for (const k of keys) {
+        smoothed[k] = movingAverage(frames.map((f) => f[k]), windowSize);
+      }
+      return frames.map((f, i) => ({
+        ...f,
+        elbowAngle: smoothed.elbowAngle[i],
+        kneeAngle: smoothed.kneeAngle[i],
+        bodyLineAngle: smoothed.bodyLineAngle[i],
+        torsoLean: smoothed.torsoLean[i],
+        hipOffset: smoothed.hipOffset[i]
+      }));
+    }
+
+    export function detectReps(frames, config) {
+      if (!frames.length) return [];
+      const reps = [];
+      let state = "TOP";
+      let current = null;
+
+      for (let i = 0; i < frames.length; i++) {
+        const f = frames[i];
+        const angle = f[config.primaryMetric];
+
+        if (state === "TOP") {
+          if (angle < config.lockoutTarget - config.hysteresis) {
+            state = "ACTIVE";
+            current = {
+              startTime: f.time,
+              minAngle: angle,
+              minAngleTime: f.time,
+              chinCleared: Boolean(f.chinAboveWrists),
+              frames: [f]
+            };
+          }
+        } else if (state === "ACTIVE") {
+          current.frames.push(f);
+          if (angle < current.minAngle) {
+            current.minAngle = angle;
+            current.minAngleTime = f.time;
+          }
+          if (f.chinAboveWrists) {
+            current.chinCleared = true;
+          }
+
+          if (angle >= config.lockoutTarget) {
+            const duration = f.time - current.startTime;
+            const excursion = config.lockoutTarget - current.minAngle;
+            if (duration >= config.minRepDurationSec && excursion >= config.minExcursionDeg) {
+              const reachedAngle = current.minAngle <= config.depthTarget;
+              const isFull = config.requireChinAboveWrists
+                ? reachedAngle && current.chinCleared
+                : reachedAngle;
+
+              const maxHipSag = Math.max(...current.frames.map((fr) => fr.hipOffset));
+              const minHipPike = Math.min(...current.frames.map((fr) => fr.hipOffset));
+              const minBodyLine = Math.min(...current.frames.map((fr) => fr.bodyLineAngle));
+              const maxBodyLine = Math.max(...current.frames.map((fr) => fr.bodyLineAngle));
+              const maxTorsoLean = Math.max(...current.frames.map((fr) => fr.torsoLean));
+              const loweringDuration = current.minAngleTime - current.startTime;
+
+              reps.push({
+                repNumber: reps.length + 1,
+                isFull,
+                reachedAngle,
+                chinCleared: current.chinCleared,
+                minAngle: current.minAngle,
+                minAngleTime: current.minAngleTime,
+                duration,
+                loweringDuration,
+                startTime: current.startTime,
+                endTime: f.time,
+                maxHipSag,
+                minHipPike,
+                minBodyLine,
+                maxBodyLine,
+                maxTorsoLean
+              });
+            }
+            state = "TOP";
+            current = null;
+          }
+        }
+      }
+      return reps;
+    }
+
+    export function getScoreLabel(score) {
+      if (score >= 85) return { text: "Great form", tone: "good" };
+      if (score >= 60) return { text: "Solid, with a few tweaks", tone: "warn" };
+      return { text: "Needs practice", tone: "bad" };
+    }
+
+    export function scoreRepExercise(frames, config) {
+      const smoothed = smoothFrames(frames, SMOOTHING_WINDOW);
+      const reps = detectReps(smoothed, config);
+      const fullReps = reps.filter((r) => r.isFull);
+      const partialReps = reps.filter((r) => !r.isFull);
+
+      if (reps.length === 0) {
+        return {
+          mode: "reps",
+          score: 0,
+          label: getScoreLabel(0),
+          reps: [],
+          fullCount: 0,
+          partialCount: 0,
+          smoothedFrames: smoothed,
+          feedback: [
+            {
+              type: "issue",
+              text: "No complete reps were detected. Make sure your whole body stays in frame and finish each rep cleanly."
+            }
+          ]
+        };
+      }
+
+      const depthScores = reps.map((r) => {
+        if (r.isFull) return 100;
+        if (r.reachedAngle && config.requireChinAboveWrists && !r.chinCleared) return 70;
+        const progress = clamp(
+          (config.lockoutTarget - r.minAngle) / (config.lockoutTarget - config.depthTarget),
+          0,
+          1
+        );
+        return progress * 90;
+      });
+      const avgDepth = depthScores.reduce((a, b) => a + b, 0) / depthScores.length;
+
+      let formPenalties = 0;
+      let sagCount = 0;
+      let pikeCount = 0;
+      let leanCount = 0;
+      let chinMissCount = 0;
+      let swingCount = 0;
+      let flatPikeCount = 0;
+
+      for (const r of reps) {
+        if (config.id === "push-up") {
+          if (r.maxHipSag > config.maxHipSag || r.minBodyLine < config.minBodyLineAngle) {
+            sagCount++;
+            formPenalties += 25;
+          }
+          if (r.minHipPike < config.maxHipPike) {
+            pikeCount++;
+            formPenalties += 18;
+          }
+        } else if (config.id === "squat" || config.id === "lunge" || config.id === "dip") {
+          if (r.maxTorsoLean > config.maxTorsoLean) {
+            leanCount++;
+            formPenalties += 25;
+          }
+        } else if (config.id === "pike-push-up") {
+          if (r.maxBodyLine > config.maxPikeAngle) {
+            flatPikeCount++;
+            formPenalties += 25;
+          }
+        } else if (config.id === "pull-up" || config.id === "muscle-up") {
+          if (!r.chinCleared) {
+            chinMissCount++;
+            formPenalties += 30;
+          }
+          if (Math.max(Math.abs(r.maxHipSag), Math.abs(r.minHipPike)) > config.maxHipSwing) {
+            swingCount++;
+            formPenalties += 20;
+          }
+        }
+      }
+      const avgFormPenalty = formPenalties / reps.length;
+      const formScore = clamp(100 - avgFormPenalty, 0, 100);
+
+      let tempoScore = 90;
+      let fastCount = 0;
+      for (const r of reps) {
+        if (r.loweringDuration < config.minLoweringSec) fastCount++;
+      }
+      if (reps.length >= 2) {
+        const durations = reps.map((r) => r.duration);
+        const mean = durations.reduce((a, b) => a + b, 0) / durations.length;
+        const variance = durations.reduce((a, d) => a + (d - mean) ** 2, 0) / durations.length;
+        const cv = mean > 0 ? Math.sqrt(variance) / mean : 0;
+        tempoScore = clamp(100 - Math.max(0, cv - 0.12) * 140, 35, 100);
+      }
+      if (fastCount > 0) {
+        tempoScore = clamp(tempoScore - (fastCount / reps.length) * 35, 20, 100);
+      }
+
+      let rawScore = Math.round(0.5 * avgDepth + 0.35 * formScore + 0.15 * tempoScore);
+      if (fullReps.length === 0) {
+        rawScore = Math.min(rawScore, 50);
+      }
+      rawScore = clamp(rawScore, 0, 100);
+
+      const feedback = [];
+      if (partialReps.length > 0) {
+        feedback.push({
+          type: "issue",
+          text:
+            config.id === "roll-over"
+              ? `${partialReps.length} of ${reps.length} reps didn't tuck all the way through.`
+              : `${partialReps.length} of ${reps.length} reps didn't go quite deep enough.`
+        });
+      }
+      if (sagCount > 0) {
+        feedback.push({
+          type: "issue",
+          text:
+            sagCount === reps.length
+              ? "Your hips dropped toward the floor. Tighten your abs and glutes to keep your body straight."
+              : "Your hips sagged on a few reps. Keep a straight line from shoulders to ankles."
+        });
+      }
+      if (pikeCount > 0) {
+        feedback.push({
+          type: "issue",
+          text: "Your hips lifted too high on a few reps. Lower them in line with your torso."
+        });
+      }
+      if (flatPikeCount > 0) {
+        feedback.push({
+          type: "issue",
+          text: "Your hips dropped out of the V-shape. Keep your hips stacked high over your hands."
+        });
+      }
+      if (leanCount > 0) {
+        feedback.push({
+          type: "issue",
+          text:
+            config.id === "dip"
+              ? "Your chest leaned far forward. Keep your shoulders stacked over the bars."
+              : "Your chest leaned far forward. Keep your chest proud and core braced."
+        });
+      }
+      if (chinMissCount > 0) {
+        feedback.push({
+          type: "issue",
+          text:
+            config.id === "muscle-up"
+              ? `${chinMissCount} of ${reps.length} reps didn't clear your chest above the bar.`
+              : `${chinMissCount} of ${reps.length} reps didn't bring your chin clearly over the bar.`
+        });
+      }
+      if (swingCount > 0) {
+        feedback.push({
+          type: "issue",
+          text: "Your legs swung during the pull. Keep your legs together and core tight."
+        });
+      }
+      if (fastCount >= Math.max(1, Math.ceil(reps.length / 2))) {
+        feedback.push({
+          type: "issue",
+          text: "You're moving quickly—slow down and control the lowering phase."
+        });
+      }
+
+      if (feedback.length === 0) {
+        feedback.push({
+          type: "good",
+          text: "Great set! Full range of motion, solid posture, and steady control throughout."
+        });
+      }
+
+      return {
+        mode: "reps",
+        score: rawScore,
+        label: getScoreLabel(rawScore),
+        reps,
+        fullCount: fullReps.length,
+        partialCount: partialReps.length,
+        smoothedFrames: smoothed,
+        feedback
+      };
+    }
+
+    export function scoreHoldExercise(frames, config) {
+      const smoothed = smoothFrames(frames, SMOOTHING_WINDOW);
+      if (smoothed.length === 0) {
+        return {
+          mode: "hold",
+          score: 0,
+          label: getScoreLabel(0),
+          holdDurationSec: 0,
+          straightFraction: 0,
+          smoothedFrames: [],
+          reps: [],
+          feedback: [{ type: "issue", text: `No clear ${config.name.toLowerCase()} frames were detected.` }]
+        };
+      }
+
+      const holdDurationSec = Math.max(0, smoothed[smoothed.length - 1].time - smoothed[0].time);
+      let goodFrames = 0;
+      let sagFrames = 0;
+      let pikeFrames = 0;
+      let bentKneeFrames = 0;
+
+      for (const f of smoothed) {
+        if (config.id === "l-sit") {
+          const goodHipAngle = f.bodyLineAngle >= config.depthTarget && f.bodyLineAngle <= config.lockoutTarget;
+          const straightLegs = f.kneeAngle >= config.minKneeAngle;
+          if (goodHipAngle && straightLegs) {
+            goodFrames++;
+          } else {
+            if (!straightLegs) bentKneeFrames++;
+            if (!goodHipAngle) sagFrames++;
+          }
+        } else {
+          const isStraight =
+            f.bodyLineAngle >= config.depthTarget &&
+            f.hipOffset <= config.maxHipSag &&
+            f.hipOffset >= config.maxHipPike;
+          if (isStraight) {
+            goodFrames++;
+          } else if (f.hipOffset > config.maxHipSag) {
+            sagFrames++;
+          } else if (f.hipOffset < config.maxHipPike) {
+            pikeFrames++;
+          } else {
+            sagFrames++;
+          }
+        }
+      }
+
+      const straightFraction = goodFrames / smoothed.length;
+      const durationFraction = clamp(holdDurationSec / config.targetDurationSec, 0, 1);
+      const score = clamp(Math.round(0.8 * (straightFraction * 100) + 0.2 * (durationFraction * 100)), 0, 100);
+
+      const feedback = [];
+      if (config.id === "l-sit") {
+        if (bentKneeFrames / smoothed.length > 0.2) {
+          feedback.push({
+            type: "issue",
+            text: "Your knees bent during the hold. Straighten your legs and point your toes."
+          });
+        }
+        if (sagFrames / smoothed.length > 0.2) {
+          feedback.push({
+            type: "issue",
+            text: "Your feet dropped below hip height. Lift your legs higher into an L shape."
+          });
+        }
+      } else {
+        if (sagFrames / smoothed.length > 0.2) {
+          feedback.push({
+            type: "issue",
+            text: "Your hips dropped toward the floor. Tighten your abs and squeeze your glutes."
+          });
+        }
+        if (pikeFrames / smoothed.length > 0.2) {
+          feedback.push({
+            type: "issue",
+            text: "Your hips lifted too high. Lower them so your body forms one straight line."
+          });
+        }
+      }
+
+      if (holdDurationSec < config.targetDurationSec) {
+        feedback.push({
+          type: "issue",
+          text: `You held for ${holdDurationSec.toFixed(1)}s out of the ${config.targetDurationSec}s goal.`
+        });
+      }
+      if (feedback.length === 0) {
+        feedback.push({
+          type: "good",
+          text:
+            config.id === "l-sit"
+              ? "Great L-sit! Your legs stayed straight and lifted for the full target time."
+              : "Great plank! You kept your body straight and steady for the full target time."
+        });
+      }
+
+      return {
+        mode: "hold",
+        score,
+        label: getScoreLabel(score),
+        holdDurationSec,
+        straightFraction,
+        smoothedFrames: smoothed,
+        reps: [],
+        feedback
+      };
+    }
+
+    export function analyzeSet(frames, exerciseId, customConfig = null) {
+      const config = customConfig || EXERCISE_CONFIG[exerciseId];
+      if (!config) throw new Error(`Unknown exercise: ${exerciseId}`);
+      if (frames.length < MIN_USABLE_FRAMES) {
+        return {
+          error: "Too few clear body frames were detected. Film from the side in good light with your whole body in frame."
+        };
+      }
+      if (config.mode === "hold") {
+        return scoreHoldExercise(frames, config);
+      }
+      return scoreRepExercise(frames, config);
+    }
+    // === PURE_ENGINE_END ===
+
+    const BLUEPRINTS = {
+      "push-up": {
+        start: [[22, 64], [32, 46], [34, 30], [60, 44], [88, 60]],
+        depth: [[22, 64], [28, 56], [36, 52], [62, 57], [88, 63]],
+        jointIdx: 1
+      },
+      "dip": {
+        start: [[48, 64], [48, 44], [52, 24], [54, 46], [54, 72]],
+        depth: [[48, 64], [38, 54], [54, 36], [54, 58], [54, 78]],
+        jointIdx: 1
+      },
+      "pike-push-up": {
+        start: [[24, 68], [32, 50], [42, 34], [64, 24], [86, 68]],
+        depth: [[24, 68], [26, 58], [40, 48], [62, 26], [86, 68]],
+        jointIdx: 1
+      },
+      "pull-up": {
+        start: [[56, 14], [56, 30], [56, 46], [56, 64], [56, 80]],
+        depth: [[56, 14], [42, 28], [56, 20], [56, 42], [56, 66]],
+        jointIdx: 1
+      },
+      "muscle-up": {
+        start: [[56, 42], [56, 54], [56, 66], [56, 76], [56, 84]],
+        depth: [[56, 42], [56, 28], [58, 16], [58, 34], [58, 52]],
+        jointIdx: 1
+      },
+      "roll-over": {
+        start: [[56, 18], [56, 36], [56, 56], [56, 76]],
+        depth: [[56, 18], [46, 34], [64, 28], [74, 44]],
+        jointIdx: 2
+      },
+      "squat": {
+        start: [[54, 20], [54, 42], [56, 60], [56, 76]],
+        depth: [[48, 36], [38, 54], [60, 56], [56, 76]],
+        jointIdx: 2
+      },
+      "lunge": {
+        start: [[54, 20], [54, 42], [56, 60], [56, 76]],
+        depth: [[52, 34], [50, 52], [68, 54], [68, 76]],
+        jointIdx: 2
+      },
+      "plank": {
+        start: [[24, 62], [28, 44], [56, 48], [86, 56]],
+        depth: [[24, 62], [28, 44], [56, 48], [86, 56]],
+        jointIdx: 2
+      },
+      "l-sit": {
+        start: [[40, 66], [40, 46], [42, 28], [46, 52], [82, 52]],
+        depth: [[40, 66], [40, 46], [42, 28], [46, 52], [82, 52]],
+        jointIdx: 3
+      }
+    };
+
+    const MEDIAPIPE_WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.3/wasm";
+    const POSE_MODEL_URL =
+      "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+    const HISTORY_KEY = "calix_form_coach_history_v1";
+    const MAX_VIDEO_SECONDS = 60.5;
+
+    const state = {
+      selectedExercise: "push-up",
+      selectedCategory: "all",
+      blueprintShowDepth: false,
+      videoUrl: null,
+      videoKey: null,
+      videoDuration: 0,
+      isAnalyzing: false,
+      poseLandmarker: null,
+      landmarkerPromise: null,
+      lastMediaPipeTimestampMs: 0,
+      delegateUsed: null,
+      cachedFramesByVideoKey: new Map(),
+      lastFrames: null,
+      lastAnalysis: null,
+      isDemoMode: false,
+      demoAnimId: null,
+      playbackRate: 1.0,
+      scanRate: 2.0,
+      customThresholds: {}
+    };
+
+    const el = {
+      categoryFilters: document.getElementById("categoryFilters"),
+      exerciseList: document.getElementById("exerciseList"),
+      cameraTipText: document.getElementById("cameraTipText"),
+      blueprintSvg: document.getElementById("blueprintSvg"),
+      blueprintToggleBtn: document.getElementById("blueprintToggleBtn"),
+      blueprintTargets: document.getElementById("blueprintTargets"),
+      dropzone: document.getElementById("dropzone"),
+      fileInput: document.getElementById("fileInput"),
+      videoPlayer: document.getElementById("videoPlayer"),
+      overlayCanvas: document.getElementById("overlayCanvas"),
+      hudOverlay: document.getElementById("hudOverlay"),
+      hudAngle: document.getElementById("hudAngle"),
+      hudCounterWrap: document.getElementById("hudCounterWrap"),
+      hudCounter: document.getElementById("hudCounter"),
+      hudForm: document.getElementById("hudForm"),
+      fileMeta: document.getElementById("fileMeta"),
+      playPauseBtn: document.getElementById("playPauseBtn"),
+      speedBtn: document.getElementById("speedBtn"),
+      scanSpeedBtn: document.getElementById("scanSpeedBtn"),
+      changeVideoBtn: document.getElementById("changeVideoBtn"),
+      analyzeBtn: document.getElementById("analyzeBtn"),
+      runDemoBtn: document.getElementById("runDemoBtn"),
+      demoFromStageBtn: document.getElementById("demoFromStageBtn"),
+      depthSlider: document.getElementById("depthSlider"),
+      depthSliderLabel: document.getElementById("depthSliderLabel"),
+      depthSliderVal: document.getElementById("depthSliderVal"),
+      lockoutSlider: document.getElementById("lockoutSlider"),
+      lockoutSliderVal: document.getElementById("lockoutSliderVal"),
+      lockoutSliderRow: document.getElementById("lockoutSliderRow"),
+      resetThresholdsBtn: document.getElementById("resetThresholdsBtn"),
+      progressWrap: document.getElementById("progressWrap"),
+      progressLabel: document.getElementById("progressLabel"),
+      progressPct: document.getElementById("progressPct"),
+      progressFill: document.getElementById("progressFill"),
+      statusBanner: document.getElementById("statusBanner"),
+      modelStatus: document.getElementById("modelStatus"),
+      resultsSection: document.getElementById("resultsSection"),
+      resultExerciseTitle: document.getElementById("resultExerciseTitle"),
+      resultScore: document.getElementById("resultScore"),
+      resultLabel: document.getElementById("resultLabel"),
+      primaryCountLabel: document.getElementById("primaryCountLabel"),
+      primaryCountValue: document.getElementById("primaryCountValue"),
+      usableFramesValue: document.getElementById("usableFramesValue"),
+      feedbackList: document.getElementById("feedbackList"),
+      chartTitle: document.getElementById("chartTitle"),
+      angleChart: document.getElementById("angleChart"),
+      repTableWrap: document.getElementById("repTableWrap"),
+      repTableBody: document.getElementById("repTableBody"),
+      reportSummaryGrid: document.getElementById("reportSummaryGrid"),
+      reportText: document.getElementById("reportText"),
+      copyReportBtn: document.getElementById("copyReportBtn"),
+      downloadReportBtn: document.getElementById("downloadReportBtn"),
+      historyContainer: document.getElementById("historyContainer"),
+      clearHistoryBtn: document.getElementById("clearHistoryBtn")
+    };
+
+    function getActiveConfig(id = state.selectedExercise) {
+      const base = EXERCISE_CONFIG[id];
+      const override = state.customThresholds[id];
+      return override ? { ...base, ...override } : { ...base };
+    }
+
+    function showStatus(msg, type = "error") {
+      el.statusBanner.textContent = msg;
+      el.statusBanner.className = `status-banner is-visible ${type === "error" ? "is-error" : "is-info"}`;
+    }
+
+    function clearStatus() {
+      el.statusBanner.textContent = "";
+      el.statusBanner.className = "status-banner";
+    }
+
+    function renderBlueprint() {
+      const cfg = getActiveConfig();
+      const bp = BLUEPRINTS[cfg.id];
+      const pts = state.blueprintShowDepth ? bp.depth : bp.start;
+      el.blueprintToggleBtn.textContent = state.blueprintShowDepth ? "See start" : "See target position";
+      el.cameraTipText.textContent = cfg.cameraTip;
+      el.blueprintTargets.textContent =
+        cfg.mode === "hold"
+          ? `Goal: ${cfg.depthCue} (${cfg.targetDurationSec}s)`
+          : `Goal: ${cfg.depthCue}`;
+
+      const lines = pts
+        .slice(0, -1)
+        .map(
+          (p, i) =>
+            `<line x1="${p[0]}" y1="${p[1]}" x2="${pts[i + 1][0]}" y2="${pts[i + 1][1]}" stroke="#A3D95B" stroke-width="3" stroke-linecap="round" />`
+        )
+        .join("");
+      const joints = pts
+        .map(
+          (p, i) =>
+            `<circle cx="${p[0]}" cy="${p[1]}" r="${i === bp.jointIdx ? 4.5 : 3}" fill="${
+              i === bp.jointIdx ? "#F3F4F6" : "#111317"
+            }" stroke="#A3D95B" stroke-width="1.8" />`
+        )
+        .join("");
+      el.blueprintSvg.innerHTML = `${lines}${joints}`;
+    }
+
+    function describeDifficulty(val, baseVal, isDepth) {
+      const diff = val - baseVal;
+      if (Math.abs(diff) <= 3) return "Standard";
+      if (isDepth) {
+        return diff < 0 ? "Stricter (deeper)" : "Easier (forgiving)";
+      }
+      return diff > 0 ? "Stricter (fuller)" : "Easier (forgiving)";
+    }
+
+    function syncThresholdSliders() {
+      const cfg = getActiveConfig();
+      const base = EXERCISE_CONFIG[cfg.id];
+      el.depthSlider.value = String(cfg.depthTarget);
+      el.depthSliderVal.textContent = describeDifficulty(cfg.depthTarget, base.depthTarget, true);
+      el.depthSliderLabel.textContent = cfg.mode === "hold" ? "Posture strictness" : "Depth strictness";
+
+      if (cfg.mode === "hold") {
+        el.lockoutSliderRow.hidden = true;
+      } else {
+        el.lockoutSliderRow.hidden = false;
+        el.lockoutSlider.value = String(cfg.lockoutTarget);
+        el.lockoutSliderVal.textContent = describeDifficulty(cfg.lockoutTarget, base.lockoutTarget, false);
+      }
+    }
+
+    function renderExerciseButtons() {
+      el.exerciseList.innerHTML = "";
+      const list = Object.values(EXERCISE_CONFIG).filter(
+        (ex) => state.selectedCategory === "all" || ex.category === state.selectedCategory
+      );
+      for (const ex of list) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "exercise-btn";
+        btn.setAttribute("aria-pressed", String(ex.id === state.selectedExercise));
+        btn.innerHTML = `
+          <div class="exercise-top-row">
+            <span class="exercise-name">${ex.name}</span>
+            <span class="exercise-cat-tag">${ex.categoryLabel}</span>
+          </div>
+          <span class="exercise-type">${ex.mode === "hold" ? "Timed hold" : "Rep counter"}</span>`;
+        btn.addEventListener("click", () => {
+          if (state.isAnalyzing) return;
+          state.selectedExercise = ex.id;
+          renderExerciseButtons();
+          renderBlueprint();
+          syncThresholdSliders();
+        });
+        el.exerciseList.appendChild(btn);
+      }
+      renderBlueprint();
+      syncThresholdSliders();
+    }
+
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveHistoryEntry(entry) {
+      try {
+        const items = loadHistory();
+        items.unshift(entry);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 8)));
+      } catch {
+        // Ignore storage errors
+      }
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const items = loadHistory();
+      if (!items.length) {
+        el.historyContainer.innerHTML = '<p class="history-empty">No analyzed sets saved yet.</p>';
+        return;
+      }
+      const rows = items
+        .map(
+          (item) => `
+          <tr>
+            <td>${item.date}</td>
+            <td>${item.exercise}</td>
+            <td><strong>${item.score}</strong> / 100</td>
+            <td>${item.summary}</td>
+          </tr>`
+        )
+        .join("");
+      el.historyContainer.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Exercise</th>
+                <th>Score</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function stopDemoLoop() {
+      if (state.demoAnimId) {
+        cancelAnimationFrame(state.demoAnimId);
+        state.demoAnimId = null;
+      }
+    }
+
+    function handleVideoFile(file) {
+      clearStatus();
+      stopDemoLoop();
+      state.isDemoMode = false;
+      if (!file) return;
+      const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v|avi)$/i.test(file.name);
+      if (!isVideo) {
+        showStatus("Please select a valid video file (MP4, WebM, or MOV).");
+        return;
+      }
+
+      if (state.videoUrl) {
+        URL.revokeObjectURL(state.videoUrl);
+      }
+      const url = URL.createObjectURL(file);
+      state.videoUrl = url;
+      state.videoKey = `${file.name}_${file.size}_${file.lastModified}`;
+      el.videoPlayer.src = url;
+      el.analyzeBtn.disabled = true;
+      el.fileMeta.textContent = `Loading ${file.name}...`;
+
+      // Pre-warm pose engine immediately while video metadata loads
+      ensurePoseLandmarker().catch(() => {});
+
+      el.videoPlayer.onloadedmetadata = () => {
+        const dur = el.videoPlayer.duration;
+        if (!Number.isFinite(dur) || dur <= 0) {
+          showStatus("Could not read video duration. Try another video file.");
+          resetVideoState();
+          return;
+        }
+        if (dur > MAX_VIDEO_SECONDS) {
+          showStatus(`Video is ${dur.toFixed(1)}s long. Maximum allowed length is 60 seconds.`);
+          resetVideoState();
+          return;
+        }
+        state.videoDuration = dur;
+        el.dropzone.classList.add("is-hidden");
+        el.changeVideoBtn.hidden = false;
+        el.playPauseBtn.hidden = false;
+        el.speedBtn.hidden = false;
+        el.analyzeBtn.disabled = false;
+        el.fileMeta.textContent = `${file.name} (${dur.toFixed(1)}s)`;
+        clearOverlayCanvas();
+      };
+
+      el.videoPlayer.onerror = () => {
+        showStatus("This video format could not be decoded in your browser.");
+        resetVideoState();
+      };
+    }
+
+    function resetVideoState() {
+      stopDemoLoop();
+      if (state.videoUrl) {
+        URL.revokeObjectURL(state.videoUrl);
+        state.videoUrl = null;
+      }
+      state.videoKey = null;
+      el.videoPlayer.removeAttribute("src");
+      el.videoPlayer.load();
+      el.dropzone.classList.remove("is-hidden");
+      el.changeVideoBtn.hidden = true;
+      el.playPauseBtn.hidden = true;
+      el.speedBtn.hidden = true;
+      el.hudOverlay.hidden = true;
+      el.analyzeBtn.disabled = true;
+      el.fileMeta.textContent = "No video selected";
+      clearOverlayCanvas();
+    }
+
+    function clearOverlayCanvas() {
+      const ctx = el.overlayCanvas.getContext("2d");
+      ctx.clearRect(0, 0, el.overlayCanvas.width, el.overlayCanvas.height);
+    }
+
+    function updateHud(frame, cfg, liveCount) {
+      el.hudOverlay.hidden = false;
+      const val = frame[cfg.primaryMetric];
+      let posLabel = "Moving";
+      if (cfg.mode === "hold") {
+        if (cfg.id === "l-sit") {
+          posLabel = val >= cfg.depthTarget && val <= cfg.lockoutTarget ? "Good L-shape" : "Legs dropping";
+        } else {
+          posLabel = val >= cfg.depthTarget ? "Body straight" : "Hips dropping";
+        }
+      } else {
+        if (val <= cfg.depthTarget) posLabel = "Full depth!";
+        else if (val >= cfg.lockoutTarget - 5) posLabel = "Top / Extended";
+        else posLabel = "Mid-rep";
+      }
+      el.hudAngle.textContent = posLabel;
+      el.hudCounterWrap.innerHTML =
+        cfg.mode === "hold"
+          ? `Hold:<strong>${frame.time.toFixed(1)}s</strong>`
+          : `Reps:<strong>${liveCount}</strong>`;
+
+      let alignText = "Good posture";
+      if (cfg.id === "push-up" && frame.hipOffset > cfg.maxHipSag) alignText = "Hips sagging";
+      else if (cfg.id === "push-up" && frame.hipOffset < cfg.maxHipPike) alignText = "Hips too high";
+      else if (cfg.maxTorsoLean && frame.torsoLean > cfg.maxTorsoLean) alignText = "Leaning forward";
+      else if (cfg.id === "plank" && (frame.bodyLineAngle < cfg.depthTarget || frame.hipOffset > cfg.maxHipSag)) alignText = "Hips sagging";
+      el.hudForm.textContent = alignText;
+    }
+
+    async function ensurePoseLandmarker() {
+      if (state.poseLandmarker) return state.poseLandmarker;
+      if (state.landmarkerPromise) return state.landmarkerPromise;
+
+      state.landmarkerPromise = (async () => {
+        el.modelStatus.textContent = "Warming up AI tracker...";
+        if (!mpVision) {
+          mpVision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.3/+esm");
+        }
+        const { PoseLandmarker, FilesetResolver } = mpVision;
+        const vision = await FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_URL);
+        try {
+          state.poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: { modelAssetPath: POSE_MODEL_URL, delegate: "GPU" },
+            runningMode: "VIDEO",
+            numPoses: 1
+          });
+          state.delegateUsed = "GPU";
+        } catch {
+          state.poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: { modelAssetPath: POSE_MODEL_URL, delegate: "CPU" },
+            runningMode: "VIDEO",
+            numPoses: 1
+          });
+          state.delegateUsed = "CPU";
+        }
+        el.modelStatus.textContent = `AI tracker ready (${state.delegateUsed})`;
+        return state.poseLandmarker;
+      })();
+
+      try {
+        return await state.landmarkerPromise;
+      } catch (err) {
+        state.landmarkerPromise = null;
+        throw err;
+      }
+    }
+
+    function drawSkeleton(ctx, landmarks, width, height) {
+      ctx.clearRect(0, 0, width, height);
+      if (!landmarks || !mpVision) return;
+      const { DrawingUtils, PoseLandmarker } = mpVision;
+      const drawingUtils = new DrawingUtils(ctx);
+      drawingUtils.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, {
+        color: "#A3D95B",
+        lineWidth: 3
+      });
+      drawingUtils.drawLandmarks(landmarks, {
+        color: "#111317",
+        fillColor: "#A3D95B",
+        lineWidth: 1.5,
+        radius: 4
+      });
+    }
+
+    async function runVideoAnalysis() {
+      if (state.isAnalyzing || !state.videoUrl) return;
+      clearStatus();
+      stopDemoLoop();
+      state.isDemoMode = false;
+
+      const cfg = getActiveConfig();
+
+      // Instant retrieval if pose telemetry was already extracted for this video file
+      if (state.videoKey && state.cachedFramesByVideoKey.has(state.videoKey)) {
+        const cachedFrames = state.cachedFramesByVideoKey.get(state.videoKey);
+        state.lastFrames = cachedFrames;
+        const analysis = analyzeSet(cachedFrames, state.selectedExercise, cfg);
+        if (analysis.error) {
+          showStatus(analysis.error);
+          return;
+        }
+        state.lastAnalysis = analysis;
+        renderResults(analysis, cfg, cachedFrames.length);
+        saveHistoryEntry({
+          date: new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+          exercise: cfg.name,
+          score: analysis.score,
+          summary:
+            analysis.mode === "hold"
+              ? `${analysis.holdDurationSec.toFixed(1)}s hold`
+              : `${analysis.reps.length} reps (${analysis.fullCount} full)`
+        });
+        showStatus("Instant result retrieved from cached body tracking.", "info");
+        return;
+      }
+
+      state.isAnalyzing = true;
+      el.analyzeBtn.disabled = true;
+      el.changeVideoBtn.disabled = true;
+      el.resultsSection.classList.remove("is-visible");
+      el.progressWrap.classList.add("is-visible");
+      el.progressFill.style.width = "0%";
+      el.progressPct.textContent = "0%";
+      el.progressLabel.textContent = "Preparing body tracker...";
+
+      let landmarker;
+      try {
+        landmarker = await ensurePoseLandmarker();
+      } catch {
+        state.isAnalyzing = false;
+        el.analyzeBtn.disabled = false;
+        el.changeVideoBtn.disabled = false;
+        el.progressWrap.classList.remove("is-visible");
+        showStatus("Failed to load the pose tracker. Check your internet connection and try again.");
+        return;
+      }
+
+      const video = el.videoPlayer;
+      const canvas = el.overlayCanvas;
+      const ctx = canvas.getContext("2d");
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+
+      const frames = [];
+      el.progressLabel.textContent = `Scanning movement at ${state.scanRate.toFixed(1)}x speed...`;
+
+      video.currentTime = 0;
+      video.muted = true;
+      video.playbackRate = state.scanRate;
+
+      await new Promise((resolve) => {
+        let finished = false;
+        const finish = () => {
+          if (finished) return;
+          finished = true;
+          video.playbackRate = state.playbackRate;
+          resolve();
+        };
+
+        video.onended = finish;
+
+        const processCurrentFrame = () => {
+          if (finished || video.paused || video.ended) {
+            if (video.ended) finish();
+            return;
+          }
+
+          // Strictly monotonic timestamp across the lifetime of the MediaPipe PoseLandmarker instance
+          const candidateMs = Math.round(performance.now());
+          const ts = candidateMs > state.lastMediaPipeTimestampMs ? candidateMs : state.lastMediaPipeTimestampMs + 1;
+          state.lastMediaPipeTimestampMs = ts;
+
+          try {
+            const result = landmarker.detectForVideo(video, ts);
+            const pose = result?.landmarks?.[0];
+            if (pose) {
+              drawSkeleton(ctx, pose, canvas.width, canvas.height);
+              const metrics = extractFrameMetrics(pose, canvas.width, canvas.height, video.currentTime);
+              if (metrics) {
+                frames.push(metrics);
+                const liveReps = cfg.mode === "reps" ? detectReps(frames, cfg).length : 0;
+                updateHud(metrics, cfg, liveReps);
+              }
+            } else {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+          } catch {
+            // Skip occasional frame decode hiccups without breaking the pass
+          }
+
+          const pct = Math.min(100, Math.round((video.currentTime / state.videoDuration) * 100));
+          el.progressFill.style.width = `${pct}%`;
+          el.progressPct.textContent = `${pct}%`;
+
+          if ("requestVideoFrameCallback" in video) {
+            video.requestVideoFrameCallback(processCurrentFrame);
+          } else {
+            requestAnimationFrame(processCurrentFrame);
+          }
+        };
+
+        video.play().then(() => {
+          if ("requestVideoFrameCallback" in video) {
+            video.requestVideoFrameCallback(processCurrentFrame);
+          } else {
+            requestAnimationFrame(processCurrentFrame);
+          }
+        }).catch(finish);
+      });
+
+      el.progressFill.style.width = "100%";
+      el.progressPct.textContent = "100%";
+      el.progressLabel.textContent = "Check complete";
+
+      state.isAnalyzing = false;
+      el.analyzeBtn.disabled = false;
+      el.changeVideoBtn.disabled = false;
+
+      if (state.videoKey && frames.length >= MIN_USABLE_FRAMES) {
+        state.cachedFramesByVideoKey.set(state.videoKey, frames);
+      }
+
+      state.lastFrames = frames;
+      const analysis = analyzeSet(frames, state.selectedExercise, cfg);
+      if (analysis.error) {
+        showStatus(analysis.error);
+        return;
+      }
+
+      state.lastAnalysis = analysis;
+      renderResults(analysis, cfg, frames.length);
+      saveHistoryEntry({
+        date: new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+        exercise: cfg.name,
+        score: analysis.score,
+        summary:
+          analysis.mode === "hold"
+            ? `${analysis.holdDurationSec.toFixed(1)}s hold`
+            : `${analysis.reps.length} reps (${analysis.fullCount} full)`
+      });
+    }
+
+    function generateDemoFrames(cfg) {
+      const frames = [];
+      const fps = 15;
+      const dt = 1 / fps;
+      if (cfg.mode === "hold") {
+        const dur = cfg.id === "l-sit" ? 21 : 31;
+        for (let i = 0; i < dur * fps; i++) {
+          const t = i * dt;
+          const wobble = Math.sin(t * 1.4) * 3;
+          frames.push({
+            time: t,
+            side: "left",
+            elbowAngle: 170,
+            kneeAngle: cfg.id === "l-sit" ? 168 + wobble : 174,
+            bodyLineAngle: cfg.id === "l-sit" ? 92 + wobble : 172 + wobble,
+            torsoLean: cfg.id === "l-sit" ? 6 : 84,
+            hipOffset: cfg.id === "plank" && t > 20 ? 0.04 : 0.015,
+            chinAboveWrists: false
+          });
+        }
+        return frames;
+      }
+
+      const reps = 4;
+      let t = 0;
+      for (let i = 0; i < 6; i++) {
+        frames.push({
+          time: t,
+          side: "left",
+          elbowAngle: cfg.lockoutTarget + 8,
+          kneeAngle: cfg.lockoutTarget + 8,
+          bodyLineAngle: cfg.id === "pike-push-up" ? 95 : cfg.id === "roll-over" ? 165 : 174,
+          torsoLean: 16,
+          hipOffset: 0.01,
+          chinAboveWrists: false
+        });
+        t += dt;
+      }
+
+      for (let r = 0; r < reps; r++) {
+        const isShallow = r === 2;
+        const bottom = isShallow ? cfg.depthTarget + 22 : cfg.depthTarget - 8;
+        const top = cfg.lockoutTarget + 8;
+        const steps = 28;
+        for (let i = 0; i < steps; i++) {
+          const phase = i / (steps - 1);
+          const blend = 0.5 * (1 - Math.cos(2 * Math.PI * phase));
+          const angle = top - blend * (top - bottom);
+          frames.push({
+            time: t,
+            side: "left",
+            elbowAngle: cfg.primaryMetric === "elbowAngle" ? angle : 170,
+            kneeAngle: cfg.primaryMetric === "kneeAngle" ? angle : 172,
+            bodyLineAngle:
+              cfg.primaryMetric === "bodyLineAngle"
+                ? angle
+                : cfg.id === "pike-push-up"
+                ? 95
+                : r === 3 && cfg.id === "push-up"
+                ? 148
+                : 173,
+            torsoLean: cfg.id === "squat" && r === 3 ? 49 : 18,
+            hipOffset: cfg.id === "push-up" && r === 3 ? 0.08 : 0.015,
+            chinAboveWrists:
+              cfg.id === "pull-up" || cfg.id === "muscle-up" ? angle < cfg.depthTarget + 10 && !isShallow : false
+          });
+          t += dt;
+        }
+      }
+      return frames;
+    }
+
+    function drawDemoSkeleton(frame, cfg) {
+      const canvas = el.overlayCanvas;
+      const ctx = canvas.getContext("2d");
+      const w = (canvas.width = 640);
+      const h = (canvas.height = 360);
+      ctx.clearRect(0, 0, w, h);
+
+      const bp = BLUEPRINTS[cfg.id];
+      const top = cfg.lockoutTarget + 8;
+      const bottom = cfg.depthTarget;
+      const val = frame[cfg.primaryMetric];
+      const progress = cfg.mode === "hold" ? 0.5 : clamp((top - val) / Math.max(10, top - bottom), 0, 1);
+
+      const pts = bp.start.map((p, idx) => {
+        const d = bp.depth[idx];
+        return [
+          ((p[0] + (d[0] - p[0]) * progress) / 112) * w,
+          ((p[1] + (d[1] - p[1]) * progress) / 88) * h
+        ];
+      });
+
+      ctx.strokeStyle = "#A3D95B";
+      ctx.lineWidth = 6;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      pts.forEach((p, idx) => {
+        if (idx === 0) ctx.moveTo(p[0], p[1]);
+        else ctx.lineTo(p[0], p[1]);
+      });
+      ctx.stroke();
+
+      pts.forEach((p, idx) => {
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], idx === bp.jointIdx ? 9 : 6, 0, Math.PI * 2);
+        ctx.fillStyle = idx === bp.jointIdx ? "#F3F4F6" : "#111317";
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#A3D95B";
+        ctx.stroke();
+      });
+    }
+
+    function runDemoSet() {
+      if (state.isAnalyzing) return;
+      clearStatus();
+      stopDemoLoop();
+      state.isDemoMode = true;
+
+      const cfg = getActiveConfig();
+      const frames = generateDemoFrames(cfg);
+      state.lastFrames = frames;
+      el.dropzone.classList.add("is-hidden");
+      el.changeVideoBtn.hidden = false;
+      el.playPauseBtn.hidden = true;
+      el.speedBtn.hidden = true;
+      el.fileMeta.textContent = `Sample ${cfg.name.toLowerCase()} set (${frames[frames.length - 1].time.toFixed(1)}s)`;
+
+      const analysis = analyzeSet(frames, cfg.id, cfg);
+      state.lastAnalysis = analysis;
+      renderResults(analysis, cfg, frames.length);
+
+      let idx = 0;
+      const step = () => {
+        if (!state.isDemoMode || idx >= frames.length) return;
+        const f = frames[idx];
+        drawDemoSkeleton(f, cfg);
+        const liveReps = cfg.mode === "reps" ? detectReps(frames.slice(0, idx + 1), cfg).length : 0;
+        updateHud(f, cfg, liveReps);
+        idx++;
+        state.demoAnimId = requestAnimationFrame(step);
+      };
+      state.demoAnimId = requestAnimationFrame(step);
+    }
+
+    function buildSessionReport(analysis, config, usableFrames) {
+      const dateStr = new Date().toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      const outcome =
+        analysis.mode === "hold"
+          ? `${analysis.holdDurationSec.toFixed(1)}s hold (${Math.round(analysis.straightFraction * 100)}% steady)`
+          : `${analysis.fullCount} full of ${analysis.reps.length} reps`;
+
+      el.reportSummaryGrid.innerHTML = `
+        <div class="report-metric"><span>Exercise</span><strong>${config.name} (${config.categoryLabel})</strong></div>
+        <div class="report-metric"><span>Form Score</span><strong>${analysis.score} / 100</strong></div>
+        <div class="report-metric"><span>Outcome</span><strong>${outcome}</strong></div>
+        <div class="report-metric"><span>Tracked Frames</span><strong>${usableFrames} frames</strong></div>
+      `;
+
+      const tips = analysis.feedback.map((f, i) => `${i + 1}. ${f.text}`).join("\n");
+      const repLines =
+        analysis.mode === "reps" && analysis.reps.length
+          ? "\nRep breakdown:\n" +
+            analysis.reps
+              .map(
+                (r) =>
+                  `- Rep ${r.repNumber}: ${r.isFull ? "Full rep" : "Too shallow"} (${r.duration.toFixed(1)}s)`
+              )
+              .join("\n")
+          : "";
+
+      el.reportText.textContent = [
+        `CALIX — SESSION FORM REPORT`,
+        `Date: ${dateStr}`,
+        `Movement: ${config.name} (${config.categoryLabel})`,
+        `Form Score: ${analysis.score}/100 — ${analysis.label.text}`,
+        `Summary: ${outcome}`,
+        ``,
+        `Coaching takeaways:`,
+        tips,
+        repLines
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    function renderResults(analysis, config, usableFrames) {
+      el.resultsSection.classList.add("is-visible");
+      el.resultExerciseTitle.textContent = `${config.name} · ${config.categoryLabel}`;
+      el.resultScore.textContent = String(analysis.score);
+      el.resultLabel.textContent = analysis.label.text;
+      el.resultLabel.className = `score-label ${analysis.label.tone}`;
+      el.usableFramesValue.textContent = `${usableFrames} tracked`;
+
+      if (analysis.mode === "hold") {
+        el.primaryCountLabel.textContent = "Hold time";
+        el.primaryCountValue.textContent = `${analysis.holdDurationSec.toFixed(1)}s`;
+        el.repTableWrap.hidden = true;
+      } else {
+        el.primaryCountLabel.textContent = "Reps completed";
+        el.primaryCountValue.textContent = `${analysis.reps.length} (${analysis.fullCount} full)`;
+        el.repTableWrap.hidden = false;
+        el.repTableBody.innerHTML = analysis.reps
+          .map((r) => {
+            const depthPct = Math.round(
+              clamp(((config.lockoutTarget - r.minAngle) / Math.max(10, config.lockoutTarget - config.depthTarget)) * 100, 0, 115)
+            );
+            const depthText = r.reachedAngle
+              ? config.requireChinAboveWrists && !r.chinCleared
+                ? "High enough (chin below bar)"
+                : `Full depth (${Math.min(100, depthPct)}%)`
+              : `${depthPct}% of target`;
+            const paceText =
+              r.loweringDuration < config.minLoweringSec
+                ? `Fast (${r.duration.toFixed(1)}s)`
+                : `Controlled (${r.duration.toFixed(1)}s)`;
+            return `
+          <tr class="is-clickable" data-seek="${r.minAngleTime}" title="Jump to rep ${r.repNumber}">
+            <td>Rep ${r.repNumber}</td>
+            <td><span class="pill ${r.isFull ? "pill-full" : "pill-partial"}">${
+              r.isFull ? "Full rep" : "Too shallow"
+            }</span></td>
+            <td>${depthText}</td>
+            <td>${paceText}</td>
+          </tr>`;
+          })
+          .join("");
+      }
+
+      el.feedbackList.innerHTML = analysis.feedback
+        .map(
+          (f) => `<li class="feedback-item ${f.type === "good" ? "is-good" : "is-issue"}">${f.text}</li>`
+        )
+        .join("");
+
+      el.chartTitle.textContent = `${config.metricLabel} over time`;
+      drawAngleChart(analysis.smoothedFrames, config);
+      buildSessionReport(analysis, config, usableFrames);
+    }
+
+    function drawAngleChart(frames, config, highlightTime = null) {
+      const canvas = el.angleChart;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const w = Math.max(300, rect.width);
+      const h = 218;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      if (!frames.length) return;
+
+      const pad = { top: 20, right: 16, bottom: 26, left: 68 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      const minVal = 40;
+      const maxVal = 185;
+      const maxT = Math.max(1, frames[frames.length - 1].time);
+      const xOf = (t) => pad.left + (t / maxT) * plotW;
+      const yOf = (deg) => pad.top + ((maxVal - clamp(deg, minVal, maxVal)) / (maxVal - minVal)) * plotH;
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#9CA3AF";
+      ctx.font = "11px 'Inter', sans-serif";
+
+      const guideLevels =
+        config.mode === "hold"
+          ? [
+              { deg: 175, label: "Straight" },
+              { deg: 130, label: "Slight bend" },
+              { deg: 90, label: "L-shape" }
+            ]
+          : [
+              { deg: 165, label: "Extended" },
+              { deg: 125, label: "Halfway" },
+              { deg: 85, label: "Deep" }
+            ];
+
+      for (const g of guideLevels) {
+        const y = yOf(g.deg);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(w - pad.right, y);
+        ctx.stroke();
+        ctx.fillText(g.label, 8, y + 4);
+      }
+
+      const drawTarget = (deg, label, color) => {
+        const y = yOf(deg);
+        ctx.save();
+        ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(w - pad.right, y);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fillText(label, pad.left + 6, y - 5);
+        ctx.restore();
+      };
+
+      drawTarget(
+        config.depthTarget,
+        config.mode === "hold" ? "Target posture zone" : "Target depth line",
+        "#4ADE80"
+      );
+      if (config.mode === "reps") {
+        drawTarget(config.lockoutTarget, "Full extension (top)", "#9CA3AF");
+      }
+
+      ctx.strokeStyle = "#A3D95B";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      frames.forEach((f, idx) => {
+        const x = xOf(f.time);
+        const y = yOf(f[config.primaryMetric]);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      if (highlightTime !== null) {
+        const hx = xOf(clamp(highlightTime, 0, maxT));
+        ctx.save();
+        ctx.strokeStyle = "#F3F4F6";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(hx, pad.top);
+        ctx.lineTo(hx, h - pad.bottom);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.fillStyle = "#9CA3AF";
+      ctx.fillText("Start (0s)", pad.left, h - 6);
+      ctx.fillText(`End (${maxT.toFixed(1)}s)`, w - pad.right - 56, h - 6);
+    }
+
+    function seekToTimestamp(timeSec) {
+      if (!Number.isFinite(timeSec) || !state.lastFrames?.length) return;
+      const cfg = getActiveConfig();
+      drawAngleChart(state.lastAnalysis.smoothedFrames, cfg, timeSec);
+      if (state.videoUrl && !state.isDemoMode) {
+        el.videoPlayer.pause();
+        el.videoPlayer.currentTime = clamp(timeSec, 0, state.videoDuration || timeSec);
+        el.playPauseBtn.textContent = "Play";
+      } else if (state.isDemoMode) {
+        stopDemoLoop();
+        const nearest = state.lastFrames.reduce((prev, curr) =>
+          Math.abs(curr.time - timeSec) < Math.abs(prev.time - timeSec) ? curr : prev
+        );
+        drawDemoSkeleton(nearest, cfg);
+        updateHud(nearest, cfg, state.lastAnalysis.reps?.length || 0);
+      }
+    }
+
+    function reAnalyzeWithCustomThresholds() {
+      if (!state.lastFrames?.length) return;
+      const cfg = getActiveConfig();
+      const analysis = analyzeSet(state.lastFrames, cfg.id, cfg);
+      if (!analysis.error) {
+        state.lastAnalysis = analysis;
+        renderResults(analysis, cfg, state.lastFrames.length);
+      }
+    }
+
+    // Event bindings
+    el.categoryFilters.addEventListener("click", (e) => {
+      const btn = e.target.closest(".filter-pill");
+      if (!btn || state.isAnalyzing) return;
+      state.selectedCategory = btn.dataset.cat;
+      for (const pill of el.categoryFilters.querySelectorAll(".filter-pill")) {
+        pill.setAttribute("aria-pressed", String(pill === btn));
+      }
+      const visible = Object.values(EXERCISE_CONFIG).filter(
+        (ex) => state.selectedCategory === "all" || ex.category === state.selectedCategory
+      );
+      if (visible.length && !visible.some((ex) => ex.id === state.selectedExercise)) {
+        state.selectedExercise = visible[0].id;
+      }
+      renderExerciseButtons();
+    });
+
+    el.blueprintToggleBtn.addEventListener("click", () => {
+      state.blueprintShowDepth = !state.blueprintShowDepth;
+      renderBlueprint();
+    });
+
+    el.depthSlider.addEventListener("input", () => {
+      const val = Number(el.depthSlider.value);
+      const base = EXERCISE_CONFIG[state.selectedExercise];
+      el.depthSliderVal.textContent = describeDifficulty(val, base.depthTarget, true);
+      state.customThresholds[state.selectedExercise] = {
+        ...(state.customThresholds[state.selectedExercise] || {}),
+        depthTarget: val
+      };
+      renderBlueprint();
+      reAnalyzeWithCustomThresholds();
+    });
+
+    el.lockoutSlider.addEventListener("input", () => {
+      const val = Number(el.lockoutSlider.value);
+      const base = EXERCISE_CONFIG[state.selectedExercise];
+      el.lockoutSliderVal.textContent = describeDifficulty(val, base.lockoutTarget, false);
+      state.customThresholds[state.selectedExercise] = {
+        ...(state.customThresholds[state.selectedExercise] || {}),
+        lockoutTarget: val
+      };
+      renderBlueprint();
+      reAnalyzeWithCustomThresholds();
+    });
+
+    el.resetThresholdsBtn.addEventListener("click", () => {
+      delete state.customThresholds[state.selectedExercise];
+      syncThresholdSliders();
+      renderBlueprint();
+      reAnalyzeWithCustomThresholds();
+    });
+
+    el.dropzone.addEventListener("click", (e) => {
+      if (e.target.closest("#demoFromStageBtn")) return;
+      el.fileInput.click();
+    });
+    el.dropzone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        el.fileInput.click();
+      }
+    });
+    el.changeVideoBtn.addEventListener("click", () => el.fileInput.click());
+    el.demoFromStageBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      runDemoSet();
+    });
+    el.runDemoBtn.addEventListener("click", runDemoSet);
+
+    el.playPauseBtn.addEventListener("click", () => {
+      if (!state.videoUrl) return;
+      if (el.videoPlayer.paused) {
+        el.videoPlayer.play();
+        el.playPauseBtn.textContent = "Pause";
+      } else {
+        el.videoPlayer.pause();
+        el.playPauseBtn.textContent = "Play";
+      }
+    });
+
+    el.speedBtn.addEventListener("click", () => {
+      state.playbackRate = state.playbackRate === 1.0 ? 0.5 : 1.0;
+      el.videoPlayer.playbackRate = state.playbackRate;
+      el.speedBtn.textContent = `${state.playbackRate.toFixed(1)}x`;
+    });
+
+    el.scanSpeedBtn.addEventListener("click", () => {
+      state.scanRate = state.scanRate === 2.0 ? 1.0 : 2.0;
+      el.scanSpeedBtn.textContent = state.scanRate === 2.0 ? "Scan: 2.0x Fast" : "Scan: 1.0x Normal";
+    });
+
+    el.fileInput.addEventListener("change", (e) => {
+      handleVideoFile(e.target.files?.[0]);
+      e.target.value = "";
+    });
+
+    el.dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      el.dropzone.classList.add("is-dragover");
+    });
+    el.dropzone.addEventListener("dragleave", () => {
+      el.dropzone.classList.remove("is-dragover");
+    });
+    el.dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      el.dropzone.classList.remove("is-dragover");
+      handleVideoFile(e.dataTransfer?.files?.[0]);
+    });
+
+    el.repTableBody.addEventListener("click", (e) => {
+      const row = e.target.closest("tr[data-seek]");
+      if (!row) return;
+      seekToTimestamp(Number(row.dataset.seek));
+    });
+
+    el.angleChart.addEventListener("click", (e) => {
+      if (!state.lastAnalysis?.smoothedFrames?.length) return;
+      const rect = el.angleChart.getBoundingClientRect();
+      const padLeft = 68;
+      const padRight = 16;
+      const plotW = Math.max(1, rect.width - padLeft - padRight);
+      const relX = clamp((e.clientX - rect.left - padLeft) / plotW, 0, 1);
+      const frames = state.lastAnalysis.smoothedFrames;
+      const maxT = frames[frames.length - 1].time;
+      seekToTimestamp(relX * maxT);
+    });
+
+    el.copyReportBtn.addEventListener("click", () => {
+      const text = el.reportText.textContent;
+      if (!text) return;
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        el.copyReportBtn.textContent = "Copied!";
+        setTimeout(() => {
+          el.copyReportBtn.textContent = "Copy summary";
+        }, 1800);
+      } catch {
+        // Ignore clipboard failure
+      }
+      document.body.removeChild(ta);
+    });
+
+    el.downloadReportBtn.addEventListener("click", () => {
+      const text = el.reportText.textContent;
+      if (!text) return;
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `calix-${state.selectedExercise}-report.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    el.analyzeBtn.addEventListener("click", runVideoAnalysis);
+    el.clearHistoryBtn.addEventListener("click", () => {
+      try {
+        localStorage.removeItem(HISTORY_KEY);
+      } catch {
+        // ignore
+      }
+      renderHistory();
+    });
+
+    renderExerciseButtons();
+    renderHistory();
+
+    // Background idle pre-warm for instant first-run analysis
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(() => ensurePoseLandmarker().catch(() => {}));
+    } else {
+      setTimeout(() => ensurePoseLandmarker().catch(() => {}), 1200);
+    }
+  </script>
+</body>
+</html>
